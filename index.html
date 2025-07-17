@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Autenticación</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .auth-header { text-align: center; margin-bottom: 25px; }
+        .auth-header h2 { color: #333; font-weight: 600; }
+        .form-control { height: 45px; margin-bottom: 15px; }
+        .btn-auth { width: 100%; padding: 10px; font-weight: 600; }
+        .btn-google { background-color: #DB4437; color: white; }
+        .btn-facebook { background-color: #4267B2; color: white; }
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #ddd;
+            z-index: -1;
+        }
+        .divider span { background: white; padding: 0 15px; color: #777; }
+        .remember-me { margin-bottom: 15px; }
+        .auth-footer { text-align: center; margin-top: 20px; }
+        .auth-link { color: #0d6efd; text-decoration: none; font-weight: 500; }
+        .hidden { display: none; }
+        .logo-img {
+            width: 100px;
+            height: 100px;
+            display: block;
+            margin: 0 auto 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Panel de Inicio de Sesión -->
+    <div class="auth-container" id="login-container">
+        <img src="RadicalStore.jpg" alt="Logo" class="logo-img mb-3">
+        <div class="auth-header">
+            <div id="loginMessage" class="alert hidden" role="alert"></div>
+            <h2>INICIO DE SESIÓN</h2>
+        </div>
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Usuario</label>
+                <input type="text" class="form-control" id="usuario" placeholder="Usuario" required>
+            </div>
+            <div class="mb-3">
+                <label for="contrasena" class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="contrasena" placeholder="Contraseña" required>
+            </div>
+            <div class="mb-3 form-check remember-me">
+                <input type="checkbox" class="form-check-input" id="rememberPassword">
+                <label class="form-check-label" for="rememberPassword">Recordar contraseña</label>
+            </div>
+
+            <!-- Campo oculto para el token de reCAPTCHA -->
+            <input type="hidden" id="recaptchaToken" name="recaptchaToken">
+
+            <button type="submit" class="btn btn-primary btn-auth" id="loginButton">
+                Ingresar
+            </button>
+
+            <!-- Google Sign-In -->
+            <div class="d-flex justify-content-center my-3">
+                <div id="g_id_onload"
+                     data-client_id="480610804915-0r21gu8krs2di8jcs6k2g6q0vdkocbnn.apps.googleusercontent.com"
+                     data-callback="handleCredentialResponse">
+                </div>
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-shape="rectangular"
+                     data-theme="outline"
+                     data-text="sign_in_with"
+                     data-size="large"
+                     data-width="300">
+                </div>
+            </div>
+        </form>
+        <div class="auth-footer">
+            <a href="#" class="auth-link">¿OLVIDASTE TU CONTRASEÑA?</a>
+        </div>
+    </div>
+
+    <!-- Panel de Registro -->
+    <div class="auth-container hidden" id="register-container">
+        <div class="auth-header">
+            <h2>REGISTRESE</h2>
+        </div>
+        <form id="registerForm">
+            <div class="mb-3">
+                <label for="registerEmail" class="form-label">Correo electronico</label>
+                <input type="email" class="form-control" id="registerEmail" placeholder="Correo electrónico" required>
+            </div>
+
+            <!-- Campo oculto para el token de reCAPTCHA -->
+            <input type="hidden" id="recaptchaTokenRegister" name="recaptchaToken">
+
+            <button type="submit" class="btn btn-primary btn-auth" id="registerButton">
+                Continuar
+            </button>
+
+            <div class="divider">
+                <span>o</span>
+            </div>
+
+            <button type="button" class="btn btn-google btn-auth mb-3">
+                <i class="fab fa-google me-2"></i> Continuar con Google
+            </button>
+            <button type="button" class="btn btn-facebook btn-auth">
+                <i class="fab fa-facebook-f me-2"></i> Continuar con Facebook
+            </button>
+        </form>
+        <div class="auth-footer">
+            <p>¿Ya tienes una cuenta? <a href="#" class="auth-link" id="login-link">Ingresa aquí</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Alternar entre login y registro
+    document.getElementById('login-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('login-container').classList.remove('hidden');
+        document.getElementById('register-container').classList.add('hidden');
+    });
+
+    // Manejo de Google Sign-In
+    function handleCredentialResponse(response) {
+        console.log("ID Token: " + response.credential);
+
+        // Envía el token al backend para validarlo
+        fetch('http://localhost:3003/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: response.credential })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Inicio de sesión exitoso');
+                    // Redirige o realiza otra acción
+                } else {
+                    alert('Error en la autenticación con Google');
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Error en la autenticación con Google');
+            });
+    }
+    
+
+    // Inicializar reCAPTCHA v3 para el formulario de login
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('loginButton');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validando...';
+
+        // Usa grecaptcha directamente, sin declararla
+        grecaptcha.ready(function() {
+            grecaptcha.execute('6LePHYErAAAAAHLLbdeQZcflOZUWx7tUjK25yCHx', {action: 'login'}).then(function(token) {
+                document.getElementById("recaptchaToken").value = token;
+
+                const usuario = document.getElementById('usuario').value;
+                const contrasena = document.getElementById('contrasena').value;
+
+                fetch('http://localhost:3003/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        usuario: usuario,
+                        contrasena: contrasena,
+                        recaptchaToken: token
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        const msgDiv = document.getElementById('loginMessage');
+                        msgDiv.classList.remove('hidden', 'alert-success', 'alert-danger');
+                        if (data.success) {
+                            msgDiv.classList.add('alert-success');
+                            msgDiv.textContent = '¡Autenticación exitosa!';
+                        } else {
+                            msgDiv.classList.add('alert-danger');
+                            msgDiv.textContent = data.message || 'Usuario o contraseña incorrectos.';
+                        }
+                        btn.disabled = false;
+                        btn.innerHTML = 'Ingresar';
+                    })
+                    .catch(() => {
+                        const msgDiv = document.getElementById('loginMessage');
+                        msgDiv.classList.remove('hidden', 'alert-success');
+                        msgDiv.classList.add('alert-danger');
+                        msgDiv.textContent = 'Error en la autenticación.';
+                        btn.disabled = false;
+                        btn.innerHTML = 'Ingresar';
+                    });
+            });
+        });
+    });
+</script>
+<!-- reCAPTCHA v3 -->
+<script src="https://www.google.com/recaptcha/api.js?render=6LePHYErAAAAAHLLbdeQZcflOZUWx7tUjK25yCHx">
+</script>
+</body>
+</html>
