@@ -356,6 +356,7 @@ const requireRecaptcha = (version = 'v3') => {
         }
     };
 };
+
 // Función para generar JWT
 const generateToken = (user) => {
 return jwt.sign(
@@ -366,25 +367,11 @@ return jwt.sign(
     },
     process.env.JWT_SECRET || 'tu_jwt_secret_key',
     { expiresIn: '24h' }
-);
-};
-
-// Función para generar JWT
-// Función para generar JWT
-const generateToken = (user) => {
-    return jwt.sign(
-        {
-            id: user._id,
-            email: user.email,
-            username: user.username
-        },
-        process.env.JWT_SECRET || 'tu_jwt_secret_key',
-        { expiresIn: '24h' }
     );
 };
 
 // Registro tradicional
-    app.post('/api/auth/register', requireRecaptcha('v3'), async (req, res) => {
+app.post('/api/auth/register', requireRecaptcha('v3'), async (req, res) => {
         try {
             const { email, username, password } = req.body;
 
@@ -620,7 +607,7 @@ const generateToken = (user) => {
     });
 
 // Manejo de errores global
-    app.use((error, req, res, next) => {
+    app.use((error, req, res) => {
         console.error('Error global:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
     });
